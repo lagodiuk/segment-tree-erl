@@ -43,10 +43,10 @@ Implementation of [Segment tree](http://en.wikipedia.org/wiki/Segment_tree) data
                     {interval,1,10}},
               #Fun<erl_eval.12.82930912>}
 4> 
-4> seg_tree:fetch(seg_tree:interval(1,5), ST).
+4> seg_tree:fetch(interval:new(1,5), ST).
 15
-5> seg_tree:fetch(seg_tree:interval(1,4), ST).
+5> seg_tree:fetch(interval:new(1,4), ST).
 10
 6> 
-6> seg_tree:fetch(seg_tree:interval(1,6), ST).
+6> seg_tree:fetch(interval:new(1,6), ST).
 ```
