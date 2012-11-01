@@ -5,13 +5,20 @@ Implementation of [Segment tree](http://en.wikipedia.org/wiki/Segment_tree) data
 
 ### usage ###
 ```erlang
-1> c(seg_tree).
-{ok,seg_tree}
+1> c(segment_tree_make).
+{ok,segment_tree_make}
 2> 
-2> Sum = fun(X, null) -> X; (X, Y) -> X+Y end.
-#Fun<erl_eval.12.82930912>
+2> segment_tree_make:make().
+Recompile: interval
+Recompile: segment_tree
+Recompile: segment_tree_test
+  All 3 tests passed.
+ok
 3> 
-3> ST = seg_tree:stree([1,2,3,4,5,6,7,8,9,10], Sum).
+3> Sum = fun(X, null) -> X; (X, Y) -> X+Y end.
+#Fun<erl_eval.12.82930912>
+4> 
+4> ST = segment_tree:new([1,2,3,4,5,6,7,8,9,10], Sum).
 {segment_tree,{node,{node,{node,{node,{node,1,null,1,
                                             {interval,1,1}},
                                       {node,2,null,2,{interval,2,2}},
@@ -42,11 +49,13 @@ Implementation of [Segment tree](http://en.wikipedia.org/wiki/Segment_tree) data
                     55,
                     {interval,1,10}},
               #Fun<erl_eval.12.82930912>}
-4> 
-4> seg_tree:fetch(interval:new(1,5), ST).
+5> 
+5> segment_tree:fetch(interval:new(1,5), ST).
 15
-5> seg_tree:fetch(interval:new(1,4), ST).
-10
 6> 
-6> seg_tree:fetch(interval:new(1,6), ST).
+6> segment_tree:fetch(interval:new(1,4), ST).
+10
+7> 
+7> segment_tree:fetch(interval:new(1,6), ST).
+21
 ```

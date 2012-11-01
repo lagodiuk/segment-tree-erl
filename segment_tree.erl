@@ -1,21 +1,24 @@
--module(seg_tree).
--compile(export_all).
+-module(segment_tree).
+-export([new/2, fetch/2]).
 
 -include("interval.hrl").
+-include("segment_tree.hrl").
 
 -record(node, {left, right, val, interval}).
 -record(segment_tree, {root, func}).
-
--define(EMPTY_CHILD, null).
--define(START_INDEX, 1).
 
 node(Left, Right, Val, Interval) ->
         #node{left=Left, right=Right, val=Val, interval=Interval}.
 node(Leaf, Val, Interval) ->
         #node{left=Leaf, right=?EMPTY_CHILD, val=Val, interval=Interval}.
 
-stree(List, F) ->
-        #segment_tree{root=stree(make_leafs(List, F), [], F), func=F}.
+get_interval(#node{interval=Interval, _=_}) ->
+	Interval.
+
+new(List, F) ->
+	Leafs = make_leafs(List, F),
+	Tree = stree(Leafs, [], F),
+        #segment_tree{root=Tree, func=F}.
 
 make_leafs(List, F) ->
 	make_leafs(List, F, [], ?START_INDEX).
@@ -23,7 +26,9 @@ make_leafs([], _F, Acc, _Indx) ->
 	lists:reverse(Acc);
 make_leafs([H | T], F, Acc, Indx) ->
 	Interval = interval:new(Indx),
-	make_leafs(T, F, [node(H, F(H, null), Interval) | Acc], Indx+1).
+	Value = F(H, ?EMPTY_CHILD),
+	Leaf = node(H, Value, Interval),
+	make_leafs(T, F, [Leaf | Acc], Indx+1).
 
 stree([], [Tree], _F) ->
         Tree;
@@ -32,18 +37,22 @@ stree([], Acc, F) ->
 stree([A], Acc, F) ->
         stree([], [A | Acc], F);
 stree([A = #node{val=ValA, interval=LInterval, _=_}, B = #node{val=ValB, interval=RInterval, _=_} | T], Acc, F) ->
-        stree(T, [node(A, B, F(ValA, ValB), interval:join(LInterval, RInterval)) | Acc], F).
+	Interval = interval:join(LInterval, RInterval),
+	Value = F(ValA, ValB),
+	Node = node(A, B, Value, Interval),
+        stree(T, [Node | Acc], F).
 
 fetch(#interval{left=L, right=R}, SegTree) when R < L ->
-	fetch(interval:new(R,L), SegTree);
+	ReverseInterval = interval:new(R,L),
+	fetch(ReverseInterval, SegTree);
 fetch(Interval, #segment_tree{root=Root, func=F}) ->
 	fetch(Interval, Root, F).
 fetch(#interval{left=L, right=R}, #node{interval=#interval{left=L, right=R}, val=Val, _=_}, _F) ->
 	Val;
 fetch(Interval, #node{left=Left, right=Right}, F) ->
-	#node{interval=LInterval, _=_} = Left,
+	LInterval = get_interval(Left),
+	RInterval = get_interval(Right),
 	LI = interval:intersect(LInterval, Interval),
-	#node{interval=RInterval, _=_} = Right,
 	RI = interval:intersect(Interval, RInterval),
 	case {LI, RI} of
 		{LI, ?EMPTY_INTERVAL} ->
