@@ -1,5 +1,5 @@
 -module(segment_tree).
--export([new/2, fetch/2]).
+-export([new/2, fetch/2, update/3]).
 
 -include("interval.hrl").
 -include("segment_tree.hrl").
@@ -14,6 +14,9 @@ node(Leaf, Val, Interval) ->
 
 get_interval(#node{interval=Interval, _=_}) ->
 	Interval.
+
+get_value(#node{val=Value, _=_}) ->
+	Value.
 
 new(List, F) ->
 	Leafs = make_leafs(List, F),
@@ -65,9 +68,25 @@ fetch(Interval, #node{left=Left, right=Right}, F) ->
 			F(LF, RF)
 	end.
 
-%% update(Index, UpdateF, #node{interval=#interval{left=Index, right=Index}, left=X, _=_}, SegTreeF) ->
-%%	NewX = UpdateF(X),
-%%	NewVal = SegTreeF(NewX),
-%%	node(NewX, NewVal, interval(Index)).
-%% update(Index, UpdateF, #node{left=Left, right=Right, interval=Interval}, SegTreeF) ->
-	
+update(Index, UpdateF, #segment_tree{root=Root, func=SegTreeF}=ST) ->
+	NewRoot = update(Index, UpdateF, Root, SegTreeF),
+	ST#segment_tree{root=NewRoot}.
+update(Index, UpdateF, #node{interval=#interval{left=Index, right=Index}, left=X, _=_}, SegTreeF) ->
+	NewX = UpdateF(X),
+	NewVal = SegTreeF(NewX, ?EMPTY_CHILD),
+	node(NewX, NewVal, interval:new(Index));
+update(Index, UpdateF, #node{left=Left, right=Right, interval=Interval}, SegTreeF) ->
+	LInterval = get_interval(Left),
+	RInterval = get_interval(Right),
+	InLeft = interval:contains(LInterval, Index),
+	InRight = interval:contains(RInterval, Index),
+	{NewLeft, NewRight} = case {InLeft, InRight} of
+		{true, false} ->
+			{update(Index, UpdateF, Left, SegTreeF), Right};
+		{false, true} ->
+			{Left, update(Index, UpdateF, Right, SegTreeF)}
+	end,
+	LeftVal = get_value(NewLeft),
+	RightVal = get_value(NewRight),
+	NewVal = SegTreeF(LeftVal, RightVal),
+	node(NewLeft, NewRight, NewVal, Interval).
