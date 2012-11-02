@@ -31,6 +31,15 @@ substr_test() ->
 	?assertMatch("56789", segment_tree:fetch(interval(5,9), ST)),
 	?assertMatch("89", segment_tree:fetch(interval(8,9), ST)).
 
+get_all_substrings_test() ->
+	Concat = fun
+        	(Char, ?EMPTY_CHILD) -> [Char];
+                (Str1, Str2) -> Str1++Str2
+        end,
+	ST = segment_tree:new("0123", Concat),
+	Substrs = [segment_tree:fetch(interval(X,Y), ST) || X <- lists:seq(1,4), Y <- lists:seq(1,4), X =< Y],
+	?assertMatch(["0","01","012","0123","1","12","123","2","23","3"], Substrs).
+
 min_max_sum_test() ->
 	MinMaxSum = fun
 		(X, ?EMPTY_CHILD) ->
