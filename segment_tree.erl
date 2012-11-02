@@ -17,7 +17,7 @@ get_interval(#node{interval=Interval, _=_}) ->
 
 new(List, F) ->
 	Leafs = make_leafs(List, F),
-	Tree = stree(Leafs, [], F),
+	Tree = make_tree(Leafs, [], F),
         #segment_tree{root=Tree, func=F}.
 
 make_leafs(List, F) ->
@@ -30,17 +30,17 @@ make_leafs([H | T], F, Acc, Indx) ->
 	Leaf = node(H, Value, Interval),
 	make_leafs(T, F, [Leaf | Acc], Indx+1).
 
-stree([], [Tree], _F) ->
+make_tree([], [Tree], _F) ->
         Tree;
-stree([], Acc, F) ->
-        stree(lists:reverse(Acc), [], F);
-stree([A], Acc, F) ->
-        stree([], [A | Acc], F);
-stree([A = #node{val=ValA, interval=LInterval, _=_}, B = #node{val=ValB, interval=RInterval, _=_} | T], Acc, F) ->
+make_tree([], Acc, F) ->
+        make_tree(lists:reverse(Acc), [], F);
+make_tree([A], Acc, F) ->
+        make_tree([], [A | Acc], F);
+make_tree([A = #node{val=ValA, interval=LInterval, _=_}, B = #node{val=ValB, interval=RInterval, _=_} | T], Acc, F) ->
 	Interval = interval:join(LInterval, RInterval),
 	Value = F(ValA, ValB),
 	Node = node(A, B, Value, Interval),
-        stree(T, [Node | Acc], F).
+        make_tree(T, [Node | Acc], F).
 
 fetch(#interval{left=L, right=R}, SegTree) when R < L ->
 	ReverseInterval = interval:new(R,L),
