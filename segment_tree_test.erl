@@ -54,6 +54,19 @@ min_max_sum_test() ->
 	?assertMatch({{min, 2}, {max, 7}, {sum, 27}}, segment_tree:fetch(interval(2,7), ST)),
 	?assertMatch({{min, 8}, {max, 9}, {sum, 17}}, segment_tree:fetch(interval(8,9), ST)).
 
+update_test() ->
+	Concat = fun
+                (Char, ?EMPTY_CHILD) -> [Char];
+                (Str1, Str2) -> Str1++Str2
+        end,
+	ST = segment_tree:new("0123", Concat),
+	ST1 = segment_tree:update(1, fun(_) -> $a end, ST),
+	ST2 = segment_tree:update(3, fun(_) -> $b end, ST1),
+        Substrs1 = [segment_tree:fetch(interval(X,Y), ST1) || X <- lists:seq(1,4), Y <- lists:seq(1,4), X =< Y],
+	Substrs2 = [segment_tree:fetch(interval(X,Y), ST2) || X <- lists:seq(1,4), Y <- lists:seq(1,4), X =< Y],
+        ?assertMatch(["a","a1","a12","a123","1","12","123","2","23","3"], Substrs1),
+	?assertMatch(["a","a1","a1b","a1b3","1","1b","1b3","b","b3","3"], Substrs2).
+
 interval(A) ->
 	interval:new(A).
 interval(A, B) ->
