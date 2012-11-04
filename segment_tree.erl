@@ -7,17 +7,6 @@
 -record(node, {left, right, val, interval}).
 -record(segment_tree, {root, func}).
 
-node(Left, Right, Val, Interval) ->
-        #node{left=Left, right=Right, val=Val, interval=Interval}.
-node(Leaf, Val, Interval) ->
-        #node{left=Leaf, right=?EMPTY_CHILD, val=Val, interval=Interval}.
-
-get_interval(#node{interval=Interval, _=_}) ->
-	Interval.
-
-get_value(#node{val=Value, _=_}) ->
-	Value.
-
 new(List, F) ->
 	Leafs = make_leafs(List, F),
 	Tree = make_tree(Leafs, [], F),
@@ -90,3 +79,14 @@ update(Index, UpdateF, #node{left=Left, right=Right, interval=Interval}, SegTree
 	RightVal = get_value(NewRight),
 	NewVal = SegTreeF(LeftVal, RightVal),
 	node(NewLeft, NewRight, NewVal, Interval).
+
+node(Left, Right, Val, Interval) ->
+        #node{left=Left, right=Right, val=Val, interval=Interval}.
+node(Leaf, Val, Interval) ->
+        #node{left=Leaf, right=?EMPTY_CHILD, val=Val, interval=Interval}.
+
+get_interval(#node{interval=Interval, _=_}) ->
+	Interval.
+
+get_value(#node{val=Value, _=_}) ->
+	Value.
